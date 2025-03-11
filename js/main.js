@@ -1,4 +1,14 @@
 Vue.component('product', {
+    props: {
+        premium: {
+            type: Boolean,
+            required: true
+        },
+        details: {
+            type: Array,
+            required: true
+        }
+    },
     template: `
     <div class="product">
         <div class="product-image">
@@ -9,9 +19,7 @@ Vue.component('product', {
             <h1>{{ title }}</h1>
             <p v-if="inStock">In stock</p>
             <p :class="{ lineThrough: !inStock }" v-else>Out of Stock</p>
-            <ul>
-                <li v-for="detail in details">{{ detail }}</li>
-            </ul>
+            <product-details :details="details"></product-details>
 
             <div class="color-box" v-for="(variant, index) in variants" :key="variant.variantId"
                  :style="{ backgroundColor:variant.variantColor }" @mouseover="updateProduct(index)">
@@ -20,6 +28,7 @@ Vue.component('product', {
             <div class="cart">
                 <p>Cart({{ cart }})</p>
             </div>
+            <p>Shipping: {{ shipping }}</p>
             <p v-show="onSale">{{sale}}</p>
 
             <button v-on:click="addToCart" :disabled="!inStock" :class="{ disabledButton: !inStock }">Add to cart</button>
@@ -33,7 +42,6 @@ Vue.component('product', {
             selectedVariant: 0,
             onSale: true,
             altText: "A pair of socks",
-            details: ['80% cotton', '20% polyester', 'Gender-neutral'],
             variants: [
                 {
                     variantId: 2234,
@@ -73,8 +81,34 @@ Vue.component('product', {
         sale() {
             return this.brand + ' ' + this.product + ' IS SALE!!!!';
         },
+        shipping() {
+            if (this.premium) {
+                return "Free";
+            } else {
+                return 2.99;
+            }
+        }
     }
 })
+
+Vue.component('product-details', {
+    props: {
+        details: {
+            type: Array,
+            required: true
+        }
+    },
+    template: `
+    <ul>
+       <li v-for="detail in details">{{ detail }}</li>
+    </ul>
+    `,
+})
+
 let app = new Vue({
     el: '#app',
+    data: {
+        premium: true,
+        details: ['80% cotton', '20% polyester', 'Gender-neutral']
+    }
 })
