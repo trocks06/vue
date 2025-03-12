@@ -3,10 +3,6 @@ Vue.component('product', {
         premium: {
             type: Boolean,
             required: true
-        },
-        details: {
-            type: Array,
-            required: true
         }
     },
     template: `
@@ -24,14 +20,11 @@ Vue.component('product', {
             <div class="color-box" v-for="(variant, index) in variants" :key="variant.variantId"
                  :style="{ backgroundColor:variant.variantColor }" @mouseover="updateProduct(index)">
             </div>
-
-            <div class="cart">
-                <p>Cart({{ cart }})</p>
-            </div>
             <p>Shipping: {{ shipping }}</p>
             <p v-show="onSale">{{sale}}</p>
 
             <button v-on:click="addToCart" :disabled="!inStock" :class="{ disabledButton: !inStock }">Add to cart</button>
+            <button v-on:click="deleteToCart">Delete to cart</button>
         </div>
     </div>
     `,
@@ -39,6 +32,7 @@ Vue.component('product', {
         return {
             product: "Socks",
             brand: 'Vue Mastery',
+            details: ['80% cotton', '20% polyester', 'Gender-neutral'],
             selectedVariant: 0,
             onSale: true,
             altText: "A pair of socks",
@@ -53,15 +47,17 @@ Vue.component('product', {
                     variantId: 2235,
                     variantColor: 'blue',
                     variantImage: "./assets/vmSocks-blue-onWhite.jpg",
-                    variantQuantity: 0,
+                    variantQuantity: 2,
                 }
             ],
-            cart: 0,
         }
     },
     methods: {
         addToCart() {
-            this.cart += 1;
+            this.$emit('add-to-cart', this.variants[this.selectedVariant].variantId);
+        },
+        deleteToCart() {
+            this.$emit('delete-to-cart', this.variants[this.selectedVariant].variantId);
         },
         updateProduct(index) {
             this.selectedVariant = index;
@@ -79,7 +75,7 @@ Vue.component('product', {
             return this.variants[this.selectedVariant].variantQuantity;
         },
         sale() {
-            return this.brand + ' ' + this.product + ' IS SALE!!!!';
+            return this.brand + ' ' + this.product + ' IS ON SALE!!!!';
         },
         shipping() {
             if (this.premium) {
@@ -100,15 +96,31 @@ Vue.component('product-details', {
     },
     template: `
     <ul>
-       <li v-for="detail in details">{{ detail }}</li>
+        <li v-for="detail in details">{{ detail }}</li>
     </ul>
-    `,
-})
+    `
+});
+
 
 let app = new Vue({
     el: '#app',
     data: {
         premium: true,
-        details: ['80% cotton', '20% polyester', 'Gender-neutral']
+        cart: [],
+    },
+    methods: {
+        updateCart(id) {
+            console.log(id);
+            this.cart.push(id);
+        },
+        deleteCart(id) {
+            let index = this.cart.indexOf(id);
+            if (index !== -1) {
+                this.cart.splice(index, 1);
+            } else {
+                console.log('Item not found in cart:', id);
+            }
+        }
+
     }
 })
