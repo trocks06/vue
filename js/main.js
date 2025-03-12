@@ -25,19 +25,7 @@ Vue.component('product', {
 
             <button v-on:click="addToCart" :disabled="!inStock" :class="{ disabledButton: !inStock }">Add to cart</button>
             <button v-on:click="deleteToCart">Delete to cart</button>
-            <div>
-                <h2>Reviews</h2>
-                <p v-if="!reviews.length">There are no reviews yet.</p>
-                <ul>
-                    <li v-for="review in reviews">
-                        <p>{{ review.name }}</p>
-                        <p>Rating: {{ review.rating }}</p>
-                        <p>{{ review.review }}</p>
-                        <p>{{ review.recommend }}</p>
-                    </li>
-                </ul>
-            </div>
-            <product-review @review-submitted="addReview"></product-review>
+            <product-tabs :reviews="reviews"></product-tabs>
         </div>
     </div>
     `,
@@ -53,13 +41,13 @@ Vue.component('product', {
                 {
                     variantId: 2234,
                     variantColor: 'green',
-                    variantImage: "./assets/vmSocks-green-onWhite.jpg",
+                    variantImage: "./img/vmSocks-green-onWhite.jpg",
                     variantQuantity: 10,
                 },
                 {
                     variantId: 2235,
                     variantColor: 'blue',
-                    variantImage: "./assets/vmSocks-blue-onWhite.jpg",
+                    variantImage: "./img/vmSocks-blue-onWhite.jpg",
                     variantQuantity: 2,
                 }
             ],
@@ -76,9 +64,6 @@ Vue.component('product', {
         updateProduct(index) {
             this.selectedVariant = index;
             console.log(index);
-        },
-        addReview(productReview) {
-            this.reviews.push(productReview);
         },
     },
     computed: {
@@ -187,7 +172,7 @@ Vue.component('product-review', {
                 } else {
                     productReview.recommend = "Не рекоммендует этот товар";
                 }
-                this.$emit('review-submitted', productReview);
+                eventBus.$emit('review-submitted', productReview)
                 this.name = null
                 this.review = null
                 this.rating = null
@@ -196,11 +181,59 @@ Vue.component('product-review', {
                 if(!this.name) this.errors.push('Name is required');
                 if(!this.review) this.errors.push('Review is required');
                 if(!this.rating) this.errors.push('Rating is required');
-                if(!this.recommend) this.errors.push('Recommed is required');
+                if(!this.recommend) this.errors.push('Recommend is required');
             }
+        }
+    },
+    mounted() {
+        eventBus.$on('review-submitted', productReview => {
+            console.log(productReview);
+            this.reviews.push(productReview)
+        })
+    }
+})
+
+Vue.component('product-tabs', {
+    props: {
+        reviews: {
+            type: Array,
+            required: false
+        }
+    },
+    template: `
+     <div>   
+       <ul>
+         <span class="tab"
+               :class="{ activeTab: selectedTab === tab }"
+               v-for="(tab, index) in tabs"
+               @click="selectedTab = tab"
+         >{{ tab }}</span>
+       </ul>
+       <div v-show="selectedTab === 'Reviews'">
+         <p v-if="!reviews.length">There are no reviews yet.</p>
+            <ul>
+                <li v-for="review in reviews">
+                    <p>{{ review.name }}</p>
+                    <p>Rating: {{ review.rating }}</p>
+                    <p>{{ review.review }}</p>
+                    <p>{{ review.recommend }}</p>
+                </li>
+            </ul>
+       </div>
+       <div v-show="selectedTab === 'Make a Review'">
+            <product-review></product-review>
+       </div>
+    </div>
+    `,
+    data() {
+        return {
+            tabs: ['Reviews', 'Make a Review'],
+            selectedTab: 'Reviews',
         }
     }
 })
+
+let eventBus = new Vue()
 
 let app = new Vue({
     el: '#app',
