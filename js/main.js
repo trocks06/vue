@@ -43,12 +43,14 @@ Vue.component('product', {
                     variantColor: 'green',
                     variantImage: "./img/vmSocks-green-onWhite.jpg",
                     variantQuantity: 10,
+                    variantSale: 20,
                 },
                 {
                     variantId: 2235,
                     variantColor: 'blue',
                     variantImage: "./img/vmSocks-blue-onWhite.jpg",
                     variantQuantity: 2,
+                    variantSale: 30,
                 }
             ],
             reviews: [],
@@ -77,7 +79,7 @@ Vue.component('product', {
             return this.variants[this.selectedVariant].variantQuantity;
         },
         sale() {
-            return this.brand + ' ' + this.product + ' IS ON SALE!!!!';
+            return this.brand + ' ' + this.product + ' ' + this.variants[this.selectedVariant].variantSale + '% SALE!!!!';
         }
     },
     mounted() {
